@@ -37,5 +37,8 @@ models:
       +tags: [intermediate]
     mart:
       +tags: [marts]
+      # fct_orders: incremental + contract requires on_schema_change to be explicit
+      fct_orders:
+        +on_schema_change: append_new_columns
     example:
       +materialized: view
