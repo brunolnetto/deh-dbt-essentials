@@ -1,0 +1,163 @@
+﻿version: 2
+
+models:
+  - name: dim_customers
+    description: >
+      Customer dimension used by analytical models.
+      Grain: one row per customer.
+    config:
+      tags: [marts]
+
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: email
+        data_tests:
+          - not_null
+          - unique
+
+      - name: country_code
+        data_tests:
+          - not_null
+
+      - name: country_name
+        data_tests:
+          - not_null
+
+      - name: region
+        data_tests:
+          - not_null
+
+      - name: currency
+        data_tests:
+          - not_null
+
+
+  - name: fct_orders
+    description: >
+      Atomic order fact table.
+      Grain: one row per order.
+      Soft-deleted records are retained; downstream aggregations filter them.
+    config:
+      contract:
+        enforced: true
+      tags: [marts, finance, incremental]
+
+    columns:
+      - name: order_id
+        description: Unique order identifier.
+        data_type: bigint
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: Customer that placed the order.
+        data_type: bigint
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+
+      - name: order_date
+        description: Date the order was placed.
+        data_type: date
+        data_tests:
+          - not_null
+
+      - name: amount
+        description: Gross order amount.
+        data_type: numeric
+        data_tests:
+          - not_null
+          - positive_values:
+              # warn instead of error so a bad row does not block incremental runs;
+              # the singular test on stg_orders is the hard enforcement point
+              severity: warn
+
+      - name: status
+        description: Current operational status.
+        data_type: text
+        data_tests:
+          - not_null
+
+      - name: is_paid
+        description: 1 if the order was paid, 0 otherwise.
+        data_type: integer
+
+      - name: is_cancelled
+        description: 1 if the order was cancelled, 0 otherwise.
+        data_type: integer
+
+      - name: is_refunded
+        description: 1 if the order was refunded, 0 otherwise.
+        data_type: integer
+
+      - name: recognized_revenue
+        description: Amount recognized as revenue (non-zero only for paid orders).
+        data_type: numeric
+        data_tests:
+          - not_null
+
+      - name: refunded_amount
+        description: Amount refunded (non-zero only for refunded orders).
+        data_type: numeric
+        data_tests:
+          - not_null
+
+      - name: created_at
+        description: Timestamp when the order was created.
+        data_type: timestamp with time zone
+        data_tests:
+          - not_null
+
+      - name: updated_at
+        description: Timestamp of the latest modification.
+        data_type: timestamp with time zone
+        data_tests:
+          - not_null
+
+      - name: deleted_at
+        description: >-
+          Soft deletion timestamp. NULL = active order.
+          Retained in the fact table; analytical aggregations exclude deleted rows.
+        data_type: timestamp with time zone
+
+
+  - name: mart_customer_sales
+    description: >
+      Business-facing customer sales summary.
+      Grain: one row per customer.
+    config:
+      tags: [marts, finance]
+
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: total_orders
+        data_tests:
+          - not_null
+
+      - name: paid_orders
+        data_tests:
+          - not_null
+
+      - name: cancelled_orders
+        data_tests:
+          - not_null
+
+      - name: refunded_orders
+        data_tests:
+          - not_null
+
+      - name: revenue
+        data_tests:
+          - not_null
