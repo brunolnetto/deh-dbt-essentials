@@ -1,0 +1,24 @@
+snapshots:
+  - name: customers_snapshot
+    relation: source('shop', 'customers')
+    config:
+      unique_key: customer_id
+      strategy: timestamp
+      updated_at: updated_at
+    description: >
+      SCD Type 2 snapshot of customer records.
+      Captures historical state when attributes such as country_code change.
+      Teaching scenario: run dbt snapshot before and after update-customer to
+      observe dbt_valid_from / dbt_valid_to rows.
+
+    columns:
+      - name: customer_id
+        description: Customer primary key.
+      - name: dbt_scd_id
+        description: Surrogate key unique to each snapshot row.
+      - name: dbt_updated_at
+        description: Timestamp when this snapshot row was last written.
+      - name: dbt_valid_from
+        description: Start of the validity period for this version of the record.
+      - name: dbt_valid_to
+        description: End of the validity period. NULL = currently active version.
