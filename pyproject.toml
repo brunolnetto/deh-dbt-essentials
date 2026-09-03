@@ -1,0 +1,11 @@
+[project]
+name = "deh-dbt-fundamentals"
+version = "0.1.0"
+description = "Projeto didático para técnicas básicas com ferramenta dbt"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "dbt-postgres>=1.11.0",
+    "psycopg[binary]>=3.3.5",
+    "python-dotenv>=1.0",
+]
