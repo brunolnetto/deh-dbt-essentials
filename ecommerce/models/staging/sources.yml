@@ -1,0 +1,84 @@
+version: 2
+
+sources:
+  - name: shop
+    description: Transactional source database used by the shop application.
+
+    schema: public
+
+    tables:
+      - name: customers
+        description: Operational customer records.
+
+        columns:
+          - name: customer_id
+            description: Primary key of the customer.
+            data_tests:
+              - not_null
+              - unique
+
+          - name: name
+            description: Customer name.
+            data_tests:
+              - not_null
+
+          - name: email
+            description: Customer email as stored by the transactional system.
+            data_tests:
+              - not_null
+
+          - name: country_code
+            description: Two-letter country code provided by the application.
+            data_tests:
+              - not_null
+
+          - name: created_at
+            description: Timestamp when the customer was created.
+            data_tests:
+              - not_null
+
+          - name: updated_at
+            description: Timestamp of the latest modification.
+            data_tests:
+              - not_null
+
+      - name: orders
+        description: Operational customer orders.
+
+        columns:
+          - name: order_id
+            description: Primary key of the order.
+            data_tests:
+              - not_null
+              - unique
+
+          - name: customer_id
+            description: Customer that owns the order.
+            data_tests:
+              - not_null
+
+          - name: order_date
+            description: Timestamp when the order was placed.
+            data_tests:
+              - not_null
+
+          - name: amount
+            description: Monetary amount stored in the transactional system.
+            data_tests:
+              - not_null
+
+          - name: status
+            description: Current operational status of the order.
+            data_tests:
+              - not_null
+
+          - name: created_at
+            description: Timestamp when the order was created.
+            data_tests:
+              - not_null
+
+          - name: updated_at
+            description: Timestamp of the latest modification.
+            data_tests:
+              - not_null
+

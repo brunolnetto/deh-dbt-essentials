@@ -1,0 +1,99 @@
+﻿version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Cleaned and normalized customer records from the transactional source.
+      One row represents one customer.
+
+    columns:
+      - name: customer_id
+        description: Unique customer identifier.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_name
+        description: Trimmed customer name.
+        data_tests:
+          - not_null
+
+      - name: email
+        description: Normalized lowercase customer email.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: country_code
+        description: Normalized uppercase country code.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('country_codes')
+                field: country_code
+
+      - name: created_at
+        data_tests:
+          - not_null
+
+      - name: updated_at
+        data_tests:
+          - not_null
+
+
+  - name: stg_orders
+    description: >
+      Cleaned representation of transactional orders.
+      One row represents one order.
+
+    columns:
+      - name: order_id
+        description: Unique order identifier.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: Customer responsible for the order.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+      - name: order_date
+        description: Date when the order was placed.
+        data_tests:
+          - not_null
+
+      - name: amount
+        description: Order amount.
+        data_tests:
+          - not_null
+
+      - name: status
+        description: Normalized order status.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - pending
+                  - paid
+                  - cancelled
+                  - refunded
+
+      - name: created_at
+        data_tests:
+          - not_null
+
+      - name: updated_at
+        data_tests:
+          - not_null
+
+      - name: deleted_at
+        description: >-
+          Soft deletion timestamp propagated from the OLTP source.
+          NULL = active order. Not filtered here; downstream models decide.
