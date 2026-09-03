@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: int_customers_enriched
+    description: >
+      Customers enriched with reference information such as country,
+      region and currency.
+
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: country_code
+        data_tests:
+          - not_null
+
+      - name: country_name
+        data_tests:
+          - not_null
+
+      - name: region
+        data_tests:
+          - not_null
+
+      - name: currency
+        data_tests:
+          - not_null
+
+
+  - name: int_orders_by_customer
+    description: >
+      Customer-level aggregation of order facts.
+      One row represents one customer with at least one order.
+
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: total_orders
+        data_tests:
+          - not_null
+
+      - name: paid_orders
+        data_tests:
+          - not_null
+
+      - name: cancelled_orders
+        data_tests:
+          - not_null
+
+      - name: refunded_orders
+        data_tests:
+          - not_null
+
+      - name: revenue
+        data_tests:
+          - not_null
+
+      - name: refunded_amount
+        data_tests:
+          - not_null
+
+      - name: average_paid_order_value
+        description: Average amount among paid orders for this customer.
+
+      - name: first_order_date
+        description: Date of the customer's earliest active order.
+
+      - name: last_order_date
+        description: Date of the customer's most recent active order.
+
