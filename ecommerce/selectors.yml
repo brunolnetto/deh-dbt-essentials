@@ -1,0 +1,14 @@
+selectors:
+  - name: finance
+    description: >
+      All models tagged 'finance'. Covers fct_orders and the customer sales mart.
+      Usage: dbt build --selector finance
+    definition:
+      method: tag
+      value: finance
+
+  - name: orders_pipeline
+    description: >
+      Full order lineage from staging through the fact table and its dependants.
+      Usage: dbt build --selector orders_pipeline
+    definition: "+fct_orders+"
