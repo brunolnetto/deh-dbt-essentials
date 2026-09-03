@@ -1,24 +1,69 @@
-name: dbt CI
+﻿name: dbt CI
 
 on:
   pull_request:
+    branches: [main]
 
 jobs:
-  dbt:
+  dbt-build:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: dbt
+          POSTGRES_PASSWORD: dbt
+          POSTGRES_DB: dbt
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: dbt
+      POSTGRES_PASSWORD: dbt
+      POSTGRES_DB: dbt
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v4
 
       - name: Install dependencies
         run: uv sync
 
-      - name: Parse project
+      - name: Seed OLTP schema
+        run: PGPASSWORD=dbt psql -h localhost -U dbt -d dbt -f oltp/init.sql
+
+      - name: Write dbt profiles
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << 'EOF'
+          ecommerce:
+            target: ci
+            outputs:
+              ci:
+                type: postgres
+                host: localhost
+                port: 5432
+                user: dbt
+                password: dbt
+                dbname: dbt
+                schema: public
+                threads: 4
+          EOF
+
+      - name: dbt parse
+        working-directory: ecommerce
         run: uv run dbt parse
 
-      - name: Build project
+      - name: dbt build
+        working-directory: ecommerce
         run: uv run dbt build
-
